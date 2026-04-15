@@ -1,134 +1,134 @@
-import { useState } from 'react';
-import { Leaf, ShoppingCart, Menu, X, Phone, Search } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { useCart } from '@/store/CartContext';
+import { Menu, Phone, X } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { categories } from '@/data/products';
+import { SearchBar } from '@/components/SearchBar';
+import { WhatsAppButton } from '@/components/WhatsAppButton';
+import { WHATSAPP_NUMBER } from '@/utils/whatsapp';
 import type { View } from '@/types';
 
 interface HeaderProps {
   currentView: View;
   onViewChange: (view: View) => void;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onProductSelect?: (productId: string) => void;
+  onCategorySelect: (categoryId: string | null) => void;
+  searchQuery: string;
+  onSearchChange: (value: string) => void;
 }
 
-export function Header({ currentView, onViewChange }: HeaderProps) {
+export function Header({
+  currentView,
+  onViewChange,
+  onCategorySelect,
+  searchQuery,
+  onSearchChange,
+}: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { totalItems } = useCart();
 
-  const navItems = [
-    { label: 'Inicio', view: 'home' as View },
-    { label: 'Productos', view: 'catalog' as View },
-    { label: 'Contacto', view: 'home' as View, action: () => {
-      onViewChange('home');
-      setTimeout(() => {
-        document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-    }},
-  ];
+  const navItems = useMemo(
+    () => [
+      { label: 'Inicio', view: 'home' as View },
+      { label: 'Catálogo', view: 'catalog' as View },
+      { label: 'Servicios', view: 'home' as View, sectionId: 'servicios' },
+      { label: 'Contacto', view: 'home' as View, sectionId: 'contacto' },
+    ],
+    []
+  );
 
-  const handleNavClick = (item: typeof navItems[0]) => {
-    if (item.action) {
-      item.action();
-    } else {
-      onViewChange(item.view);
-    }
+  const handleNavAction = (view: View, sectionId?: string) => {
+    onViewChange(view);
     setMobileMenuOpen(false);
+
+    if (sectionId) {
+      setTimeout(() => {
+        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
+      }, 80);
+    }
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-sm border-b border-green-100 shadow-sm">
-      {/* Top bar */}
-      <div className="bg-green-700 text-white py-2 px-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center text-sm">
-          <div className="flex items-center gap-2">
-            <Phone className="w-4 h-4" />
-            <span>+595 992 588 770</span>
-          </div>
-          <div className="hidden sm:block">
-            <span>Envío gratis en compras mayores a Gs. 500.000</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <a href="https://wa.me/595992588770" target="_blank" rel="noopener noreferrer" className="hover:underline">
-              WhatsApp
-            </a>
-          </div>
+    <header className="sticky top-0 z-40 border-b border-border bg-white/95 backdrop-blur-sm">
+      <div className="bg-green-800 text-green-50">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2 text-xs sm:text-sm">
+          <p className="font-medium">Soluciones para tu jardín en todo Paraguay</p>
+          <a
+            href={`https://wa.me/${WHATSAPP_NUMBER}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 hover:text-white"
+          >
+            <Phone className="h-3.5 w-3.5" />
+            +595 992 588 770
+          </a>
         </div>
       </div>
 
-      {/* Main header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <button 
-            onClick={() => onViewChange('home')}
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-          >
-            <div className="bg-green-600 p-2 rounded-lg">
-              <Leaf className="w-6 h-6 text-white" />
-            </div>
-            <div className="flex flex-col items-start">
-              <span className="text-xl font-bold text-green-800">CORPI</span>
-              <span className="text-xs text-green-600 -mt-1">& Cía</span>
-            </div>
+      <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-[auto,1fr,auto] items-center gap-4">
+          <button onClick={() => onViewChange('home')} className="text-left">
+            <p className="text-2xl font-black tracking-tight text-green-800">Corpicia</p>
+            <p className="-mt-1 text-xs font-medium text-muted-foreground">Paisajismo & Jardinería</p>
           </button>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
-            {navItems.map((item) => (
-              <button
-                key={item.label}
-                onClick={() => handleNavClick(item)}
-                className={`text-sm font-medium transition-colors hover:text-green-600 ${
-                  currentView === item.view ? 'text-green-700' : 'text-gray-600'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </nav>
-
-          {/* Actions */}
-          <div className="flex items-center gap-4">
-            <button className="p-2 hover:bg-green-50 rounded-full transition-colors">
-              <Search className="w-5 h-5 text-gray-600" />
-            </button>
-            
-            <button 
-              onClick={() => onViewChange('cart')}
-              className="relative p-2 hover:bg-green-50 rounded-full transition-colors"
-            >
-              <ShoppingCart className="w-5 h-5 text-gray-600" />
-              {totalItems > 0 && (
-                <Badge className="absolute -top-1 -right-1 bg-green-600 text-white text-xs min-w-[20px] h-5 flex items-center justify-center">
-                  {totalItems}
-                </Badge>
-              )}
-            </button>
-
-            {/* Mobile menu button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 hover:bg-green-50 rounded-lg transition-colors"
-            >
-              {mobileMenuOpen ? (
-                <X className="w-6 h-6 text-gray-600" />
-              ) : (
-                <Menu className="w-6 h-6 text-gray-600" />
-              )}
-            </button>
+          <div className="hidden md:block">
+            <SearchBar value={searchQuery} onChange={onSearchChange} />
           </div>
+
+          <div className="hidden md:block">
+            <WhatsAppButton
+              message="Hola, quiero solicitar un presupuesto para mi jardín. ¿Me pueden ayudar?"
+              label="Solicitar presupuesto"
+            />
+          </div>
+
+          <button
+            onClick={() => setMobileMenuOpen((prev) => !prev)}
+            className="ml-auto rounded-lg border border-border p-2 md:hidden"
+            aria-label="Abrir menú"
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
+
+        <div className="mt-4 md:hidden">
+          <SearchBar value={searchQuery} onChange={onSearchChange} />
         </div>
       </div>
 
-      {/* Mobile Navigation */}
+      <div className="border-t border-border bg-[#f8fbf8]">
+        <div className="mx-auto flex max-w-7xl items-center gap-3 overflow-x-auto px-4 py-3 sm:px-6 lg:px-8">
+          <button
+            onClick={() => {
+              onCategorySelect(null);
+              onViewChange('catalog');
+            }}
+            className="whitespace-nowrap rounded-full border border-border bg-white px-4 py-1.5 text-sm font-medium text-gray-700 transition hover:border-green-200 hover:text-green-700"
+          >
+            Todos
+          </button>
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => {
+                onCategorySelect(category.id);
+                onViewChange('catalog');
+              }}
+              className="whitespace-nowrap rounded-full border border-transparent px-4 py-1.5 text-sm font-medium text-gray-600 transition hover:border-green-200 hover:bg-green-50 hover:text-green-700"
+            >
+              {category.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-green-100 bg-white">
-          <nav className="flex flex-col p-4 space-y-2">
+        <div className="border-t border-border bg-white px-4 py-4 md:hidden">
+          <nav className="space-y-2">
             {navItems.map((item) => (
               <button
                 key={item.label}
-                onClick={() => handleNavClick(item)}
-                className="text-left py-3 px-4 rounded-lg hover:bg-green-50 text-gray-700 font-medium transition-colors"
+                onClick={() => handleNavAction(item.view, item.sectionId)}
+                className={`block w-full rounded-lg px-4 py-2 text-left text-sm font-medium ${
+                  currentView === item.view ? 'bg-green-50 text-green-700' : 'text-gray-700'
+                }`}
               >
                 {item.label}
               </button>

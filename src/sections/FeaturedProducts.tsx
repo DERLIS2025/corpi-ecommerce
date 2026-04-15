@@ -1,6 +1,5 @@
-import { ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { ProductCard } from '@/components/ProductCard';
+import { Button } from '@/components/ui/button';
 import { getFeaturedProducts } from '@/data/products';
 import type { View } from '@/types';
 
@@ -13,39 +12,25 @@ export function FeaturedProducts({ onViewChange, onProductSelect }: FeaturedProd
   const featuredProducts = getFeaturedProducts();
 
   return (
-    <section className="py-16 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-10">
+    <section className="bg-[#f4f8f4] py-14">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-8 flex items-end justify-between gap-4">
           <div>
-            <span className="text-green-600 font-semibold text-sm uppercase tracking-wide">
-              Venta e Instalación
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mt-2">
-              Césped Natural
-            </h2>
-            <p className="text-gray-600 mt-2 max-w-xl">
-              Los productos más populares de nuestra tienda, seleccionados por su calidad y satisfacción del cliente
+            <p className="text-sm font-semibold uppercase tracking-wide text-green-700">Destacados</p>
+            <h2 className="text-3xl font-bold text-gray-900">Venta e instalación</h2>
+            <p className="mt-2 max-w-2xl text-gray-600">
+              Productos con mayor consulta para césped, riego y paisajismo. Ideal para pedir propuesta
+              personalizada.
             </p>
           </div>
-          <Button
-            onClick={() => onViewChange('catalog')}
-            variant="outline"
-            className="mt-4 sm:mt-0 border-green-600 text-green-600 hover:bg-green-50"
-          >
-            Ver todos
-            <ArrowRight className="w-4 h-4 ml-2" />
+          <Button variant="outline" onClick={() => onViewChange('catalog')}>
+            Ver todo el catálogo
           </Button>
         </div>
 
-        {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {featuredProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onClick={() => onProductSelect(product.id)}
-            />
+            <ProductCard key={product.id} product={product} onClick={() => onProductSelect(product.id)} />
           ))}
         </div>
       </div>

@@ -1,209 +1,113 @@
-import { useState } from 'react';
-import { ArrowLeft, ShoppingCart, Check, Star, Minus, Plus, Truck, Shield } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { getProductById, formatPrice, products } from '@/data/products';
-import { useCart } from '@/store/CartContext';
+import { ArrowLeft, CheckCircle2, ShieldCheck, Truck, Wrench } from 'lucide-react';
 import { ProductCard } from '@/components/ProductCard';
-import type { View } from '@/types';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { WhatsAppButton } from '@/components/WhatsAppButton';
+import { formatPrice, getProductById, products } from '@/data/products';
+import { createProductInquiryMessage } from '@/utils/whatsapp';
 
 interface ProductViewProps {
   productId: string;
   onBack: () => void;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onViewChange: (view: View) => void;
   onProductSelect: (productId: string) => void;
 }
 
+const trustPoints = [
+  { icon: Truck, text: 'Cobertura nacional para entrega e instalación' },
+  { icon: Wrench, text: 'Instalación profesional disponible' },
+  { icon: ShieldCheck, text: 'Asesoramiento antes y después de la compra' },
+];
+
 export function ProductView({ productId, onBack, onProductSelect }: ProductViewProps) {
   const product = getProductById(productId);
-  const [quantity, setQuantity] = useState(1);
-  const { addToCart } = useCart();
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-[#f5f7f5]">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Producto no encontrado</h2>
-          <Button onClick={onBack} variant="outline">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Volver
-          </Button>
+          <p className="text-xl font-semibold text-gray-900">Producto no encontrado</p>
+          <Button onClick={onBack} className="mt-4">Volver</Button>
         </div>
       </div>
     );
   }
 
   const relatedProducts = products
-    .filter((p) => p.category === product.category && p.id !== product.id)
+    .filter((item) => item.category === product.category && item.id !== product.id)
     .slice(0, 4);
 
-  const handleAddToCart = () => {
-    for (let i = 0; i < quantity; i++) {
-      addToCart(product);
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Breadcrumb */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <button
-            onClick={onBack}
-            className="flex items-center text-gray-600 hover:text-green-600 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Volver al catálogo
+    <div className="min-h-screen bg-[#f5f7f5]">
+      <div className="border-b border-border bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+          <button onClick={onBack} className="inline-flex items-center text-sm font-medium text-gray-600 hover:text-green-700">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Volver al catálogo
           </button>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 lg:p-10">
-            {/* Image */}
-            <div className="relative aspect-square bg-gray-50 rounded-xl overflow-hidden">
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
-              {product.badge && (
-                <Badge className="absolute top-4 left-4 bg-green-600 text-white text-sm px-3 py-1">
-                  {product.badge}
-                </Badge>
-              )}
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="grid gap-8 rounded-3xl border border-border bg-white p-6 shadow-sm lg:grid-cols-2 lg:p-10">
+          <div className="overflow-hidden rounded-2xl bg-gray-50">
+            <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+          </div>
+
+          <div>
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              {product.badge && <Badge className="bg-green-700 text-white">{product.badge}</Badge>}
+              <Badge variant="secondary">Pedí presupuesto personalizado</Badge>
             </div>
+            <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
+            <p className="mt-3 text-gray-600">{product.description}</p>
+            <p className="mt-6 text-4xl font-bold text-green-800">{formatPrice(product.price)}</p>
 
-            {/* Info */}
-            <div className="flex flex-col">
-              {/* Rating */}
-              <div className="flex items-center gap-2 mb-4">
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`w-5 h-5 ${
-                        i < product.rating
-                          ? 'text-yellow-400 fill-yellow-400'
-                          : 'text-gray-300'
-                      }`}
-                    />
-                  ))}
-                </div>
-                <span className="text-gray-600">({product.reviews} reseñas)</span>
-              </div>
-
-              {/* Title */}
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                {product.name}
-              </h1>
-
-              {/* Description */}
-              <p className="text-gray-600 text-lg mb-6">
-                {product.description}
+            <div className="mt-6 space-y-3 rounded-2xl border border-green-100 bg-green-50/70 p-4">
+              <p className="text-sm font-semibold text-green-900">Pedí tu presupuesto personalizado</p>
+              <p className="text-sm text-green-900/80">
+                También podés indicar cantidad en m², instalación y materiales para recibir una propuesta completa.
               </p>
-
-              {/* Features */}
-              {product.features && (
-                <div className="mb-6">
-                  <h3 className="font-semibold text-gray-900 mb-3">Características:</h3>
-                  <ul className="space-y-2">
-                    {product.features.map((feature, index) => (
-                      <li key={index} className="flex items-center gap-2 text-gray-600">
-                        <Check className="w-4 h-4 text-green-600" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Price */}
-              <div className="flex items-center gap-4 mb-6">
-                <span className="text-4xl font-bold text-green-700">
-                  {formatPrice(product.price)}
-                </span>
-                {product.originalPrice && (
-                  <span className="text-xl text-gray-400 line-through">
-                    {formatPrice(product.originalPrice)}
-                  </span>
-                )}
-              </div>
-
-              {/* Stock */}
-              <div className="flex items-center gap-2 mb-6">
-                {product.inStock ? (
-                  <>
-                    <div className="w-3 h-3 bg-green-500 rounded-full" />
-                    <span className="text-green-600 font-medium">En stock</span>
-                  </>
-                ) : (
-                  <span className="text-red-500 font-medium">Agotado</span>
-                )}
-              </div>
-
-              {/* Quantity & Add to Cart */}
-              <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <div className="flex items-center border border-gray-200 rounded-lg">
-                  <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="p-3 hover:bg-gray-100 transition-colors"
-                  >
-                    <Minus className="w-5 h-5" />
-                  </button>
-                  <span className="px-4 py-3 font-semibold min-w-[60px] text-center">
-                    {quantity}
-                  </span>
-                  <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="p-3 hover:bg-gray-100 transition-colors"
-                  >
-                    <Plus className="w-5 h-5" />
-                  </button>
-                </div>
-                <Button
-                  onClick={handleAddToCart}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white py-6 text-lg"
-                  disabled={!product.inStock}
-                >
-                  <ShoppingCart className="w-5 h-5 mr-2" />
-                  Agregar al carrito
-                </Button>
-              </div>
-
-              {/* Benefits */}
-              <div className="grid grid-cols-2 gap-4 pt-6 border-t border-gray-200">
-                <div className="flex items-center gap-3">
-                  <Truck className="w-5 h-5 text-green-600" />
-                  <span className="text-sm text-gray-600">Envío a todo Paraguay</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Shield className="w-5 h-5 text-green-600" />
-                  <span className="text-sm text-gray-600">Garantía incluida</span>
-                </div>
-              </div>
+              <WhatsAppButton
+                message={createProductInquiryMessage(product.name)}
+                label="Consultar por WhatsApp"
+                className="w-full bg-green-700 text-white hover:bg-green-800"
+              />
             </div>
+
+            {product.features && (
+              <ul className="mt-6 space-y-2">
+                {product.features.map((feature) => (
+                  <li key={feature} className="flex items-start gap-2 text-sm text-gray-700">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 text-green-700" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
 
-        {/* Related Products */}
+        <div className="mt-8 grid gap-4 rounded-2xl border border-border bg-white p-6 sm:grid-cols-3">
+          {trustPoints.map((point) => (
+            <div key={point.text} className="flex items-center gap-3">
+              <point.icon className="h-5 w-5 text-green-700" />
+              <p className="text-sm text-gray-700">{point.text}</p>
+            </div>
+          ))}
+        </div>
+
         {relatedProducts.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              Productos relacionados
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedProducts.map((p) => (
+          <section className="mt-12">
+            <h2 className="mb-6 text-2xl font-bold text-gray-900">También te puede interesar</h2>
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {relatedProducts.map((relatedProduct) => (
                 <ProductCard
-                  key={p.id}
-                  product={p}
-                  onClick={() => onProductSelect(p.id)}
+                  key={relatedProduct.id}
+                  product={relatedProduct}
+                  onClick={() => onProductSelect(relatedProduct.id)}
                 />
               ))}
             </div>
-          </div>
+          </section>
         )}
       </div>
     </div>
