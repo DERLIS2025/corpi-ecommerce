@@ -26,4 +26,4 @@ export interface Category {
   description: string;
 }
 
-export type View = 'home' | 'catalog' | 'product' | 'cart' | 'checkout';
+export type View = 'home' | 'catalog' | 'product';

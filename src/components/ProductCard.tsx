@@ -1,8 +1,9 @@
-import { ShoppingCart, Star, Check } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Eye } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { useCart } from '@/store/CartContext';
+import { Button } from '@/components/ui/button';
+import { WhatsAppButton } from '@/components/WhatsAppButton';
 import { formatPrice } from '@/data/products';
+import { createProductInquiryMessage } from '@/utils/whatsapp';
 import type { Product } from '@/types';
 
 interface ProductCardProps {
@@ -10,100 +11,54 @@ interface ProductCardProps {
   onClick?: () => void;
 }
 
-export function ProductCard({ product, onClick }: ProductCardProps) {
-  const { addToCart } = useCart();
+const inferBadge = (name: string): string | null => {
+  if (name.toLowerCase().includes('césped') || name.toLowerCase().includes('m²')) {
+    return 'Por m²';
+  }
 
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    addToCart(product);
-  };
+  return null;
+};
+
+export function ProductCard({ product, onClick }: ProductCardProps) {
+  const supportBadge = inferBadge(product.name);
 
   return (
-    <div 
-      onClick={onClick}
-      className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer"
-    >
-      {/* Image Container */}
-      <div className="relative aspect-square overflow-hidden bg-gray-50">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
-        
-        {/* Badge */}
-        {product.badge && (
-          <Badge className="absolute top-3 left-3 bg-green-600 hover:bg-green-700 text-white">
-            {product.badge}
-          </Badge>
-        )}
-
-        {/* Quick Add Button */}
-        <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button
-            onClick={handleAddToCart}
-            size="sm"
-            className="bg-green-600 hover:bg-green-700 text-white rounded-full shadow-lg"
-          >
-            <ShoppingCart className="w-4 h-4 mr-1" />
-            Agregar
-          </Button>
+    <article className="group overflow-hidden rounded-2xl border border-border bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+      <button onClick={onClick} className="block w-full text-left">
+        <div className="relative aspect-square overflow-hidden bg-gray-50">
+          <img
+            src={product.image}
+            alt={product.name}
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+            loading="lazy"
+          />
+          {product.badge && <Badge className="absolute left-3 top-3 bg-green-700 text-white">{product.badge}</Badge>}
+          {supportBadge && (
+            <Badge className="absolute bottom-3 left-3 bg-white/95 text-green-800 hover:bg-white">{supportBadge}</Badge>
+          )}
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="p-4">
-        {/* Rating */}
-        <div className="flex items-center gap-1 mb-2">
-          <div className="flex">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                className={`w-4 h-4 ${
-                  i < product.rating
-                    ? 'text-yellow-400 fill-yellow-400'
-                    : 'text-gray-300'
-                }`}
-              />
-            ))}
+        <div className="space-y-3 p-4">
+          <h3 className="line-clamp-2 min-h-[3rem] text-base font-semibold text-gray-900 group-hover:text-green-800">
+            {product.name}
+          </h3>
+          <p className="line-clamp-2 text-sm text-gray-600">{product.description}</p>
+          <div className="flex items-center gap-2">
+            <span className="text-xl font-bold text-green-800">{formatPrice(product.price)}</span>
+            {product.originalPrice && (
+              <span className="text-sm text-gray-400 line-through">{formatPrice(product.originalPrice)}</span>
+            )}
           </div>
-          <span className="text-sm text-gray-500">({product.reviews})</span>
         </div>
+      </button>
 
-        {/* Title */}
-        <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 group-hover:text-green-700 transition-colors">
-          {product.name}
-        </h3>
-
-        {/* Description */}
-        <p className="text-sm text-gray-500 mb-3 line-clamp-2">
-          {product.description}
-        </p>
-
-        {/* Price */}
-        <div className="flex items-center gap-2">
-          <span className="text-xl font-bold text-green-700">
-            {formatPrice(product.price)}
-          </span>
-          {product.originalPrice && (
-            <span className="text-sm text-gray-400 line-through">
-              {formatPrice(product.originalPrice)}
-            </span>
-          )}
-        </div>
-
-        {/* Stock Status */}
-        <div className="flex items-center gap-1 mt-2 text-sm">
-          {product.inStock ? (
-            <>
-              <Check className="w-4 h-4 text-green-600" />
-              <span className="text-green-600">En stock</span>
-            </>
-          ) : (
-            <span className="text-red-500">Agotado</span>
-          )}
-        </div>
+      <div className="grid grid-cols-2 gap-2 p-4 pt-0">
+        <Button variant="outline" onClick={onClick}>
+          <Eye className="mr-2 h-4 w-4" />
+          Ver detalle
+        </Button>
+        <WhatsAppButton message={createProductInquiryMessage(product.name)} />
       </div>
-    </div>
+    </article>
   );
 }
